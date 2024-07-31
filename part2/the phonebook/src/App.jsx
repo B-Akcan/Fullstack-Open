@@ -22,7 +22,7 @@ function App() {
         setPersons(initialPersons)
         setShownPersons(Array(initialPersons.length).fill(true))
       })
-  }, [persons])
+  }, [])
 
   const submitHandler = (event) => {
     event.preventDefault()
