@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import Filter from "./components/Filter"
 import PersonForm from "./components/PersonForm"
 import Persons from "./components/Persons"
 import Notification from './components/Notification'
 import * as personServices from "./services/persons"
-import axios from 'axios'
 
 function App() {
   const [persons, setPersons] = useState([])
@@ -36,7 +33,7 @@ function App() {
 
     if (!exists)
     {
-      const obj = {name: newName, number: newNumber, id: (persons.length + 1).toString()}
+      const obj = {name: newName, number: newNumber}
 
       personServices
       .newPerson(obj)
@@ -44,6 +41,9 @@ function App() {
         setPersons(persons.concat(obj))
         setShownPersons(shownPersons.concat(true))
         setMessage({text: `Added ${newName}`, type: "success"})
+      })
+      .catch(error => {
+        setMessage({text: error.response.data.message, type: "failure"})
       })
     }
     else
@@ -60,6 +60,9 @@ function App() {
           newPersons.find(person => person.id === obj.id).number = newNumber
           setPersons(newPersons)
           setMessage({text: `Changed number of ${newName}`, type: "success"})
+        })
+        .catch(error => {
+          setMessage({text: error.response.data.message, type: "failure"})
         })
       }
     }
