@@ -1,7 +1,6 @@
 const Blog = require("../models/blog")
 const blogsRouter = require("express").Router()
 require("express-async-errors")
-const User = require("../models/user")
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({}).populate("userId", {username: 1, name: 1})
@@ -9,8 +8,8 @@ blogsRouter.get('/', async (request, response) => {
 })
 
 blogsRouter.post('/', async (request, response) => {
+  const user = request.user
   const body = request.body
-  const user = await User.findOne()
 
   const blog = new Blog({
     title: body.title,
@@ -20,14 +19,22 @@ blogsRouter.post('/', async (request, response) => {
     userId: user.id
   })
 
-  const result = await blog.save()
-  user.blogs = user.blogs.concat(blog)
+  const savedBlog = await blog.save()
+  user.blogs = user.blogs.concat(savedBlog._id)
   await user.save()
-  response.status(201).json(result)
+  response.status(201).json(savedBlog)
 })
 
 blogsRouter.delete("/:id", async (request, response) => {
-  await Blog.findByIdAndDelete(request.params.id)
+  const user = request.user
+  const blogToBeDeleted = await Blog.findById(request.params.id)
+
+  if (user.id !== blogToBeDeleted.userId.toString())
+    return response.status(401).json({error: "you are not authorized to delete this blog"})
+
+  await Blog.findByIdAndDelete(blogToBeDeleted.id)
+  user.blogs = user.blogs.splice(user.blogs.findIndex(blog => blog.id === blogToBeDeleted.id), 1)
+  await user.save()
   response.status(204).end()
 })
 
