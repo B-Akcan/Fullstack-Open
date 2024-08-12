@@ -1,21 +1,23 @@
 const Blog = require("../models/blog")
+const { tokenExtractor, userExtractor } = require("../utils/middleware")
 const blogsRouter = require("express").Router()
 require("express-async-errors")
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({}).populate("userId", {username: 1, name: 1})
-  response.json(blogs)
+  response.status(200).json(blogs)
 })
 
-blogsRouter.post('/', async (request, response) => {
-  const user = request.user
+blogsRouter.post('/', async (request, response, next) => {
+  const token = tokenExtractor(request)
+  const user = await userExtractor(token)
   const body = request.body
 
   const blog = new Blog({
     title: body.title,
     author: body.author,
     url: body.url,
-    likes: body.likes,
+    likes: 0,
     userId: user.id
   })
 
@@ -26,6 +28,9 @@ blogsRouter.post('/', async (request, response) => {
 })
 
 blogsRouter.delete("/:id", async (request, response) => {
+  tokenExtractor(request, response)
+  userExtractor(request, response)
+
   const user = request.user
   const blogToBeDeleted = await Blog.findById(request.params.id)
 
