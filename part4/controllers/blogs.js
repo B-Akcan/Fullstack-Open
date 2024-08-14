@@ -2,13 +2,14 @@ const Blog = require("../models/blog")
 const { tokenExtractor, userExtractor } = require("../utils/middleware")
 const blogsRouter = require("express").Router()
 require("express-async-errors")
+const mongoose = require("mongoose")
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({}).populate("userId", {username: 1, name: 1})
   response.status(200).json(blogs)
 })
 
-blogsRouter.post('/', async (request, response, next) => {
+blogsRouter.post('/', async (request, response) => {
   const token = tokenExtractor(request)
   const user = await userExtractor(token)
   const body = request.body
@@ -24,14 +25,14 @@ blogsRouter.post('/', async (request, response, next) => {
   const savedBlog = await blog.save()
   user.blogs = user.blogs.concat(savedBlog._id)
   await user.save()
+
+  savedBlog.userId = user
   response.status(201).json(savedBlog)
 })
 
 blogsRouter.delete("/:id", async (request, response) => {
-  tokenExtractor(request, response)
-  userExtractor(request, response)
-
-  const user = request.user
+  const token = tokenExtractor(request)
+  const user = await userExtractor(token)
   const blogToBeDeleted = await Blog.findById(request.params.id)
 
   if (user.id !== blogToBeDeleted.userId.toString())
@@ -44,8 +45,19 @@ blogsRouter.delete("/:id", async (request, response) => {
 })
 
 blogsRouter.put("/:id", async (request, response) => {
+  const token = tokenExtractor(request)
+  const user = await userExtractor(token)
+
   const newBlog = {...request.body}
-  await Blog.findByIdAndUpdate(request.params.id, newBlog)
+  const userId = newBlog.userId
+  newBlog.userId = newBlog.userId.id
+  const blogId = request.params.id
+
+  await Blog.findByIdAndUpdate(blogId, newBlog, {new: true})
+  user.blogs[user.blogs.findIndex(blog => blog.id === blogId)] = {...newBlog}
+  await user.save()
+
+  newBlog.userId = userId
   response.status(200).json(newBlog)
 })
 

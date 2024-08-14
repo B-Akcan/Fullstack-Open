@@ -1,29 +1,38 @@
-import { useState, useEffect } from 'react'
-import Blogs from './components/Blogs'
-import blogService from './services/blogs'
+import { useState, useEffect, useRef } from "react"
+import Blogs from "./components/Blogs"
+import blogService from "./services/blogs"
 import LoginForm from "./components/LoginForm"
 import loginService from "./services/login"
-import NewBlog from './components/NewBlog'
-import Message from './components/Message'
+import NewBlog from "./components/NewBlog"
+import Message from "./components/Message"
+import Togglable from "./components/Togglable"
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const [title, setTitle] = useState("")
-  const [author, setAuthor] = useState("")
-  const [url, setUrl] = useState("")
   const [message, setMessage] = useState("")
 
+  const togglableRef = useRef()
+
+  const compareLikes = (a, b) => {
+    if (a.likes < b.likes)
+      return 1
+    else if (a.likes > b.likes)
+      return -1
+    return 0
+  }
+
   useEffect(() => {
-    blogService.getAll().then(blogs =>
+    blogService.getAll().then(blogs => {
+      blogs.sort(compareLikes)
       setBlogs( blogs )
-    )
+    })
   }, [])
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
+    const loggedUserJSON = window.localStorage.getItem("loggedBlogAppUser")
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
@@ -36,7 +45,7 @@ const App = () => {
 
     try
     {
-      const user = await loginService.login({username, password})
+      const user = await loginService.login({ username, password })
       setUser(user)
       blogService.setToken(user.token)
       window.localStorage.setItem("loggedBlogAppUser", JSON.stringify(user))
@@ -60,14 +69,13 @@ const App = () => {
     window.localStorage.removeItem("loggedBlogAppUser")
   }
 
-  const handleNewBlog = async (event) => {
-    event.preventDefault()
+  const handleNewBlog = async (newBlog) => {
+    togglableRef.current.toggleVisibility()
 
-    const blog = await blogService.create({title, author, url})
-    setBlogs(blogs.concat(blog))
-    setTitle("")
-    setAuthor("")
-    setUrl("")
+    const blog = await blogService.create(newBlog)
+    const newBlogs = blogs.concat(blog)
+    newBlogs.sort(compareLikes)
+    setBlogs(newBlogs)
 
     setMessage(`A new blog "${blog.title}" by "${blog.author}" was added`)
     setTimeout(() => {
@@ -75,12 +83,40 @@ const App = () => {
     }, 5000)
   }
 
+  const handleUpdateBlog = async (blog) => {
+    const newBlog = await blogService.update(blog, blog.id)
+
+    const newBlogs = [...blogs]
+    newBlogs[newBlogs.findIndex(e => e.id === blog.id)] = { ...newBlog }
+    newBlogs.sort(compareLikes)
+    setBlogs(newBlogs)
+
+    setMessage(`Blog with title ${blog.title} was updated`)
+    setTimeout(() => {
+      setMessage("")
+    }, 5000)
+  }
+
+  const handleDeleteBlog = async (blog) => {
+    if (window.confirm(`Are you sure you want to delete ${blog.title}?`))
+    {
+      await blogService.deleteBlog(blog.id)
+
+      setBlogs(blogs.filter(blog_ => blog_.id !== blog.id))
+
+      setMessage(`Blog with title ${blog.title} was deleted`)
+      setTimeout(() => {
+        setMessage("")
+      }, 5000)
+    }
+  }
+
   if (user === null)
   {
     return (
       <div>
         <Message message={message} />
-        <LoginForm username={username} password={password} setUsername={setUsername} setPassword={setPassword} handleLogin={handleLogin} />
+        <LoginForm handleLogin={handleLogin} username={username} password={password} setUsername={setUsername} setPassword={setPassword} />
       </div>
     )
   }
@@ -91,8 +127,11 @@ const App = () => {
         <Message message={message} />
         <h1>Hello, {user.name}!</h1>
         <button onClick={handleLogout} >logout</button>
-        <Blogs blogs={blogs} />
-        <NewBlog handleNewBlog={handleNewBlog} title={title} setTitle={setTitle} author={author} setAuthor={setAuthor} url={url} setUrl={setUrl} />
+
+        <Togglable buttonText="create blog" ref={togglableRef}>
+          <NewBlog handleNewBlog={handleNewBlog}/>
+        </Togglable>
+        <Blogs blogs={blogs} handleUpdateBlog={handleUpdateBlog} handleDeleteBlog={handleDeleteBlog} username={user.username} />
       </div>
     )
   }
