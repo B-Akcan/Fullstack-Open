@@ -24,13 +24,13 @@ const NewBlog = ({ handleNewBlog }) => {
       <h2>New Blog</h2>
       <form onSubmit={createNewBlog}>
         <div>
-          title: <input value={title} onChange={({ target }) => setTitle(target.value)} id="titleInput"/>
+          title: <input data-testid="title" value={title} onChange={({ target }) => setTitle(target.value)} id="titleInput"/>
         </div>
         <div>
-          author: <input value={author} onChange={({ target }) => setAuthor(target.value)} id="authorInput"/>
+          author: <input data-testid="author" value={author} onChange={({ target }) => setAuthor(target.value)} id="authorInput"/>
         </div>
         <div>
-          url: <input value={url} onChange={({ target }) => setUrl(target.value)} id="urlInput"/>
+          url: <input data-testid="url" value={url} onChange={({ target }) => setUrl(target.value)} id="urlInput"/>
         </div>
         <button type="submit">create</button>
       </form>

@@ -84,7 +84,7 @@ const App = () => {
   }
 
   const handleUpdateBlog = async (blog) => {
-    const newBlog = await blogService.update(blog, blog.id)
+    const newBlog = await blogService.update(blog)
 
     const newBlogs = [...blogs]
     newBlogs[newBlogs.findIndex(e => e.id === blog.id)] = { ...newBlog }

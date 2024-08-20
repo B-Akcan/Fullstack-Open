@@ -2,7 +2,6 @@ const Blog = require("../models/blog")
 const { tokenExtractor, userExtractor } = require("../utils/middleware")
 const blogsRouter = require("express").Router()
 require("express-async-errors")
-const mongoose = require("mongoose")
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({}).populate("userId", {username: 1, name: 1})
