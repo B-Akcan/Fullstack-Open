@@ -14,6 +14,7 @@ import { initializeBlogs } from "./reducers/blogReducer"
 import { getLoggedInUser } from "./reducers/userReducer"
 import { Routes, Route, useMatch, Link } from "react-router-dom"
 import userService from "./services/users"
+import { Grid2 as Grid, AppBar, Toolbar } from "@mui/material"
 
 const App = () => {
   const dispatch = useDispatch()
@@ -23,7 +24,7 @@ const App = () => {
 
   useEffect(() => {
     dispatch(initializeBlogs())
-  }, [])
+  }, [blogs])
 
   useEffect(() => {
     dispatch(getLoggedInUser())
@@ -33,7 +34,7 @@ const App = () => {
     userService
       .getAll()
       .then(users => setUsers(users))
-  }, [])
+  }, [users])
 
   const userMatch = useMatch("/users/:id")
   const user = userMatch ? users.find(user => user.id === userMatch.params.id) : null
@@ -43,38 +44,71 @@ const App = () => {
 
   if (loggedUser === null) {
     return (
-      <div>
-        <Notification />
+      <Grid container spacing={2} columns={12} style={{ fontFamily: "Inria Sans", fontWeight: 400, fontStyle: "normal" }}>
+        <Grid size={4}></Grid>
+        <Grid size={4}>
+          <div>
+            <h1 style={{ textAlign: "center", fontSize: 60, fontStyle: "italic", color: "#0275d8" }}>Blog App</h1>
+          </div>
+        </Grid>
+        <Grid size={4}></Grid>
 
-        <Routes>
-          <Route path="/" element={<LoginForm />} />
-          <Route path="/register" element={<RegisterForm />} />
-        </Routes>
-      </div>
+        <Grid size={4}></Grid>
+        <Grid size={4}>
+          <Notification />
+        </Grid>
+        <Grid size={4}></Grid>
+
+        <Grid size={4}></Grid>
+        <Grid size={4}>
+          <Routes>
+            <Route path="/" element={<LoginForm />} />
+            <Route path="/register" element={<RegisterForm />} />
+          </Routes>
+        </Grid>
+        <Grid size={4}></Grid>
+      </Grid>
     )
   } else {
     return (
-      <div>
-        <Link to="/" style={ { padding: 5 } }>blogs</Link>
-        <Link to="/users" style={ { padding: 5 } }>users</Link>
-        <Link to="/deleteAccount" style={ { padding: 5 } }>delete account</Link>
+      <Grid container spacing={2} columns={12} style={{ fontFamily: "Inria Sans", fontWeight: 400, fontStyle: "normal" }}>
+        <Grid size={4}></Grid>
+        <Grid size={4}>
+          <AppBar position="static">
+            <Toolbar style={{ textAlign: "center", margin: "auto" }}>
+              <h2 style={{ marginRight: 20, fontStyle: "italic" }}>Blog App</h2>
+              <Link to="/" className="link" style={{ marginRight: 10 }}>Blogs</Link>
+              <Link to="/users" className="link" style={{ marginRight: 10 }}>Users</Link>
+              <Link to="/deleteAccount" className="link" style={{ marginRight: 10 }}>Delete account</Link>
+            </Toolbar>
+          </AppBar>
+        </Grid>
+        <Grid size={4}></Grid>
 
-        <Notification />
-        <Head />
+        <Grid size={4}></Grid>
+        <Grid size={4}>
+          <Notification />
+          <Head />
+        </Grid>
+        <Grid size={4}></Grid>
 
-        <Routes>
-          <Route path="/" element={
-            <>
-              <NewBlog  />
-              <Blogs />
-            </>
-          } />
-          <Route path="/users" element={<Users users={users} />} />
-          <Route path="/users/:id" element={<User user={user} />} />
-          <Route path="/blogs/:id" element={<Blog blog={blog} />} />
-          <Route path="/deleteAccount" element={<DeleteAccount id={loggedUser.id} />} />
-        </Routes>
-      </div>
+        <Grid size={4}></Grid>
+        <Grid size={4}>
+          <Routes>
+            <Route path="/" element={
+              <>
+                <NewBlog  />
+                <Blogs />
+              </>
+            } />
+            <Route path="/users" element={<Users users={users} />} />
+            <Route path="/users/:id" element={<User user={user} />} />
+            <Route path="/blogs/:id" element={<Blog blog={blog} />} />
+            <Route path="/deleteAccount" element={<DeleteAccount id={loggedUser.id} />} />
+          </Routes>
+        </Grid>
+        <Grid size={4}></Grid>
+      </Grid>
     )
   }
 }

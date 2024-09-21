@@ -1,16 +1,23 @@
+import { Link } from "react-router-dom"
+import { List, ListItem, Paper } from "@mui/material"
+
 const User = ({ user }) => {
   if (!user)
     return null
 
   return (
-    <div>
-      <h2>{user.name}'s blogs</h2>
-      <ul>
-        {user.blogs.map(blog => (
-          <li key={blog.id}>{blog.title}</li>
-        ))}
-      </ul>
-    </div>
+    <Paper elevation={10} style={{ padding: 5 }}>
+      <h2 style={{ textAlign: "center" }}>{user.name}'s blogs</h2>
+      { user.blogs.length !== 0 ? (
+        <List >
+          {user.blogs.map(blog => (
+            <ListItem key={blog.id}>
+              <Link to={`/blogs/${blog.id}`} className="contentLink">{blog.title}</Link>
+            </ListItem>
+          ))}
+        </List>
+      ) : (<p style={{ marginLeft: 10 }}>This user does not have any blog.</p>) }
+    </Paper>
   )
 }
 

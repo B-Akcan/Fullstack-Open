@@ -2,6 +2,7 @@ import userService from "../services/users"
 import { useNavigate } from "react-router-dom"
 import { useDispatch } from "react-redux"
 import { logout } from "../reducers/userReducer"
+import { Button, Paper } from "@mui/material"
 
 const DeleteAccount = ({ id }) => {
   const navigate = useNavigate()
@@ -18,11 +19,11 @@ const DeleteAccount = ({ id }) => {
   }
 
   return (
-    <div>
+    <Paper elevation={10} style={{ textAlign: "center", paddingTop: 15, paddingBottom: 15 }}>
       <p>Are you sure you want to delete your account?</p>
-      <button onClick={handleSubmit}>yes</button>
-      <button onClick={handleCancel}>no</button>
-    </div>
+      <Button onClick={handleSubmit} variant="contained" style={{ marginRight: 5 }}>Yes</Button>
+      <Button onClick={handleCancel} variant="outlined">No</Button>
+    </Paper>
   )
 }
 

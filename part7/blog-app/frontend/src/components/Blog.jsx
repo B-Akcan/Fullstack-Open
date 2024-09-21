@@ -2,11 +2,16 @@ import { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { updateBlog, deleteBlog } from "../reducers/blogReducer"
 import { setNotificationAndClearWithTimeout } from "../reducers/notificationReducer"
+import { Button, Dialog, DialogActions, DialogTitle, Paper, TextField } from "@mui/material"
+import { Link, useNavigate } from "react-router-dom"
+import { List, ListItem } from "@mui/material"
 
 const Blog = ({ blog }) => {
   const dispatch = useDispatch()
   const user = useSelector(state => state.user)
   const [comment, setComment] = useState("")
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const navigate = useNavigate()
 
   const handleLike = (blog) => {
     const newBlog = { ...blog }
@@ -17,10 +22,9 @@ const Blog = ({ blog }) => {
   }
 
   const handleDeleteBlog = (blog) => {
-    if (window.confirm(`Are you sure you want to delete ${blog.title}?`)) {
-      dispatch(deleteBlog(blog.id))
-      dispatch(setNotificationAndClearWithTimeout(`Blog "${blog.title}" was deleted`, 5))
-    }
+    dispatch(deleteBlog(blog.id))
+    dispatch(setNotificationAndClearWithTimeout(`Blog "${blog.title}" was deleted`, 5))
+    navigate("/")
   }
 
   const handleAddComment = (event) => {
@@ -47,33 +51,55 @@ const Blog = ({ blog }) => {
     return <p>This blog does not exist!</p>
 
   return (
-    <div>
-      <h2>{blog.title} by {blog.author}</h2>
-      <p>
-        <a href={`//${blog.url}`} rel="external">{blog.url}</a> <br />
-        <span data-testid="likes">{blog.likes} likes</span>{" "}
-        <button onClick={() => handleLike(blog)}>like</button> <br />
-        created by {blog.userId.name} <br />
-        {user.username === blog.userId.username ? (
-          <button onClick={() => handleDeleteBlog(blog)}>delete blog</button>
-        ) : (
-          ""
-        )}
-      </p>
+    <Paper elevation={10} style={{ paddingTop: 5, paddingLeft: 25, paddingRight: 25, paddingBottom: 5 }}>
+      <h2 style={{ textAlign: "center" }}>{blog.title} by {blog.author}</h2>
 
-      <h3>Comments</h3>
-      <form onSubmit={handleAddComment}>
-        <input type="text" value={comment} onChange={({ target }) => setComment(target.value)} />
-        <button type="submit">add comment</button>
-      </form>
-      {blog.comments.length !== 0 ?
-        <ul>
-          {blog.comments.map(comment => (
-            <li key={comment}>{comment}</li>
-          ))}
-        </ul> :
-        <p>This blog does not have any comment.</p>}
-    </div>
+      <Paper elevation={5} style={{ marginBottom: 30, paddingLeft: 15, paddingRight: 15, paddingTop: 1, paddingBottom: 15 }}>
+        <h3>About</h3>
+        <div style={{ marginBottom: 5 }}>
+          <Link href={`//${blog.url}`} rel="external" className="contentLink">{blog.url}</Link>
+        </div>
+        <div style={{ marginBottom: 5 }}>
+          <span data-testid="likes" style={{ marginRight: 10, marginBottom: 10 }}>{blog.likes} likes</span>
+          <Button onClick={() => handleLike(blog)} variant="contained">Like</Button>
+        </div>
+        <div style={{ marginBottom: 5 }}>
+          created by <Link to={`/users/${blog.userId.id}`} className="contentLink">{blog.userId.name}</Link>
+        </div>
+        {user.username === blog.userId.username ? (
+          <Button onClick={() => setDialogOpen(true)} variant="contained">delete blog</Button>
+        ) : ""}
+      </Paper>
+
+      <Paper elevation={5} style={{ marginBottom: 30, paddingLeft: 15, paddingRight: 15, paddingTop: 1, paddingBottom: 15 }}>
+        <h3>Comments</h3>
+        <form onSubmit={handleAddComment}>
+          <TextField value={comment} onChange={({ target }) => setComment(target.value)} style={{ marginRight: 10 }} />
+          <Button type="submit" variant="contained" style={{ marginTop: 10 }}>add a comment</Button>
+        </form>
+        {blog.comments.length !== 0 ?
+          <List>
+            {blog.comments.map(comment => (
+              <ListItem key={comment}>{comment}</ListItem>
+            ))}
+          </List> :
+          <p>This blog does not have any comment.</p>}
+      </Paper>
+
+      <DeleteBlogDialog dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} blog={blog} handleDeleteBlog={handleDeleteBlog} />
+    </Paper>
+  )
+}
+
+const DeleteBlogDialog = (props) => {
+  return (
+    <Dialog open={props.dialogOpen}>
+      <DialogTitle>Are you sure you want to delete blog "{props.blog.title}"?</DialogTitle>
+      <DialogActions>
+        <Button onClick={() => props.handleDeleteBlog(props.blog)} variant="contained">yes</Button>
+        <Button onClick={() => props.setDialogOpen(false)}>no</Button>
+      </DialogActions>
+    </Dialog>
   )
 }
 

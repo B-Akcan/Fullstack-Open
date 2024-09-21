@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux"
 import { newBlog } from "../reducers/blogReducer"
 import { setNotificationAndClearWithTimeout } from "../reducers/notificationReducer"
 import Togglable from "./Togglable"
+import { TextField, Button, Paper } from "@mui/material"
 
 
 const NewBlog = () => {
@@ -32,39 +33,38 @@ const NewBlog = () => {
   }
 
   return (
-    <Togglable buttonText="create blog" ref={togglableRef}>
-      <h2>New Blog</h2>
-      <form onSubmit={createNewBlog}>
-        <div>
-          title:{" "}
-          <input
-            data-testid="title"
-            value={title}
-            onChange={({ target }) => setTitle(target.value)}
-            id="titleInput"
-          />
-        </div>
-        <div>
-          author:{" "}
-          <input
-            data-testid="author"
-            value={author}
-            onChange={({ target }) => setAuthor(target.value)}
-            id="authorInput"
-          />
-        </div>
-        <div>
-          url:{" "}
-          <input
-            data-testid="url"
-            value={url}
-            onChange={({ target }) => setUrl(target.value)}
-            id="urlInput"
-          />
-        </div>
-        <button type="submit">create</button>
-      </form>
-    </Togglable>
+    <Paper elevation={10} style={{ padding: 5, marginBottom: 15 }}>
+      <Togglable buttonText="Create a blog" ref={togglableRef}>
+        <h2>Create a blog</h2>
+        <form onSubmit={createNewBlog}>
+          <div style={{ paddingBottom: 5 }}>
+            <TextField
+              data-testid="title"
+              value={title}
+              onChange={({ target }) => setTitle(target.value)}
+              id="titleInput"
+              label="Title"/>
+          </div>
+          <div style={{ paddingBottom: 5 }}>
+            <TextField
+              data-testid="author"
+              value={author}
+              onChange={({ target }) => setAuthor(target.value)}
+              id="authorInput"
+              label="Author"/>
+          </div>
+          <div style={{ paddingBottom: 10 }}>
+            <TextField
+              data-testid="url"
+              value={url}
+              onChange={({ target }) => setUrl(target.value)}
+              id="urlInput"
+              label="Url"/>
+          </div>
+          <Button type="submit" variant="contained">Create</Button>
+        </form>
+      </Togglable>
+    </Paper>
   )
 }
 
